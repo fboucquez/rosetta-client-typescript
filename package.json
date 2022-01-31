@@ -1,0 +1,71 @@
+{
+  "name": "rosetta-client-typescript",
+  "version": "1.4.10-rc1",
+  "description": "Typescript generated client to connect apps with Rosetta nodes.",
+  "homepage": "https://github.com/fboucquez/rosetta-client-typescript",
+  "main": "lib/index",
+  "types": "lib/index",
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fboucquez/rosetta-client-typescript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fboucquez/rosetta-client-typescript"
+  },
+  "author": {
+    "email": "fboucquez@gmail.com",
+    "name": "Fernando Boucquez"
+  },
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "keywords": [
+    "rosetta",
+    "coinbase",
+    "typescript"
+  ],
+  "scripts": {
+    "doc": "typedoc --out \"ts-docs\" src",
+    "build": "npx rimraf lib && tsc",
+    "prepack": "npm run build",
+    "watch": "tsc -w",
+    "gen": "GEN_DIR=\"./src/openapi\" && npx rimraf \"$GEN_DIR\"  && npx openapi-generator-cli generate  -t \"openapi-templates\" -g \"typescript-fetch\" -o \"$GEN_DIR\" -i \"api-patched.json\" --additional-properties=\"supportsES6=true\" --additional-properties=\"legacyDiscriminatorBehavior=false\" --additional-properties=\"useSingleRequestParameter=false\" --additional-properties=\"modelPropertyNaming=original\" --additional-properties=\"enumPropertyNaming=original\" --additional-properties=\"typescriptThreePlus=true\" --type-mappings=Error=ModelError,object=any && npx rimraf \"$GEN_DIR/.openapi-generator\" \"$GEN_DIR/.gitignore\" \"$GEN_DIR/.openapi-generator-ignore\" \"$GEN_DIR/tsconfig.json\" && npm run style:fix",
+    "test": "mocha -r ts-node/register -r tsconfig-paths/register --timeout 600000 --forbid-only \"test/**/*.test.ts\"",
+    "lint": "eslint --cache src/ test/ --ext .ts",
+    "lint:fix": "eslint src/ test/ --ext .ts --fix",
+    "prettier": "prettier --write ./src ./test",
+    "style:fix": "npm run create-index-files && npm run prettier && npm run lint:fix",
+    "create-index-files": "cti create ./src -b -n",
+    "version": "echo $npm_package_version"
+  },
+  "dependencies": {
+    "cross-fetch": "^3.1.5",
+    "encoding": "^0.1.13"
+  },
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.4.25",
+    "@types/chai": "^4.3.0",
+    "@types/mocha": "^9.1.0",
+    "@types/node": "^17.0.13",
+    "@typescript-eslint/eslint-plugin": "^5.10.1",
+    "@typescript-eslint/parser": "^5.10.1",
+    "chai": "^4.3.6",
+    "create-ts-index": "^1.14.0",
+    "eslint": "^8.8.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-header": "^3.1.1",
+    "eslint-plugin-prettier": "^4.0.0",
+    "mocha": "^9.2.0",
+    "prettier": "^2.5.1",
+    "prettier-plugin-organize-imports": "^2.3.4",
+    "rimraf": "^3.0.2",
+    "ts-node": "^10.4.0",
+    "tsconfig-paths": "^3.12.0",
+    "typedoc": "^0.22.11",
+    "typescript": "^4.5.5"
+  }
+}
