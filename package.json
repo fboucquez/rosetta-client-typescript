@@ -1,6 +1,6 @@
 {
   "name": "rosetta-client-typescript",
-  "version": "1.4.10-rc1",
+  "version": "1.5.0",
   "description": "Typescript generated client to connect apps with Rosetta nodes.",
   "homepage": "https://github.com/fboucquez/rosetta-client-typescript",
   "main": "lib/index",
@@ -21,7 +21,7 @@
   },
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=18.0.0"
   },
   "keywords": [
     "rosetta",
@@ -43,7 +43,6 @@
     "version": "echo $npm_package_version"
   },
   "dependencies": {
-    "cross-fetch": "^3.1.5",
     "encoding": "^0.1.13"
   },
   "devDependencies": {
