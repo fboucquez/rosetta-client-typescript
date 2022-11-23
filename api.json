@@ -1,7 +1,7 @@
 {
  "openapi":"3.0.2",
  "info": {
-   "version":"1.4.10",
+   "version":"1.4.13",
    "title":"Rosetta",
    "description":"Build Once. Integrate Your Blockchain Everywhere.",
    "license": {
@@ -910,7 +910,8 @@
           },
          "hash": {
            "type":"string",
-           "example":"0x1f2cc6c5027d2f201a5453ad1119574d2aed23a392654742ac3c78783c071f85"
+           "example":"0x1f2cc6c5027d2f201a5453ad1119574d2aed23a392654742ac3c78783c071f85",
+           "description":"This should be normalized according to the case specified in the block_hash_case network options."
           }
         }
       },
@@ -937,7 +938,7 @@
         ],
        "properties": {
          "hash": {
-           "description":"Any transactions that are attributable only to a block (ex: a block event) should use the hash of the block as the identifier.",
+           "description":"Any transactions that are attributable only to a block (ex: a block event) should use the hash of the block as the identifier.  This should be normalized according to the case specified in the transaction_hash_case in network options.",
            "type":"string",
            "example":"0x2f23fd8cca835af21f3ac375bac601f97ead75f2e79143bdf71fe2c4be043e8f"
           }
@@ -1198,7 +1199,7 @@
            "example":"header sync"
           },
          "synced": {
-           "description":"sycned is a boolean that indicates if an implementation has synced up to the most recent block. If this field is not populated, the caller should rely on a traditional tip timestamp comparison to determine if an implementation is synced. This field is particularly useful for quiescent blockchains (blocks only produced when there are pending transactions). In these blockchains, the most recent block could have a timestamp far behind the current time but the node could be healthy and at tip.",
+           "description":"synced is a boolean that indicates if an implementation has synced up to the most recent block. If this field is not populated, the caller should rely on a traditional tip timestamp comparison to determine if an implementation is synced. This field is particularly useful for quiescent blockchains (blocks only produced when there are pending transactions). In these blockchains, the most recent block could have a timestamp far behind the current time but the node could be healthy and at tip.",
            "type":"boolean"
           }
         }
@@ -1311,6 +1312,14 @@
          "mempool_coins": {
            "type":"boolean",
            "description":"Any Rosetta implementation that can update an AccountIdentifier's unspent coins based on the contents of the mempool should populate this field as true. If false, requests to `/account/coins` that set `include_mempool` as true will be automatically rejected."
+          },
+         "block_hash_case": {
+           "$ref":"#/components/schemas/Case",
+           "description":"This specifies the normalized case for block hash in the BlockIdentifier. If not specified, it's assumed to be case sensitive."
+          },
+         "transaction_hash_case": {
+           "$ref":"#/components/schemas/Case",
+           "description":"This specifies the normalized case for transaction hash in the TransactionIdentifier. If not specified, it's assumed to be case sensitive."
           }
         }
       },
@@ -1361,13 +1370,14 @@
         }
       },
      "CurveType": {
-       "description":"CurveType is the type of cryptographic curve associated with a PublicKey. * secp256k1: SEC compressed - `33 bytes` (https://secg.org/sec1-v2.pdf#subsubsection.2.3.3) * secp256r1: SEC compressed - `33 bytes` (https://secg.org/sec1-v2.pdf#subsubsection.2.3.3) * edwards25519: `y (255-bits) || x-sign-bit (1-bit)` - `32 bytes` (https://ed25519.cr.yp.to/ed25519-20110926.pdf) * tweedle: 1st pk : Fq.t (32 bytes) || 2nd pk : Fq.t (32 bytes) (https://github.com/CodaProtocol/coda/blob/develop/rfcs/0038-rosetta-construction-api.md#marshal-keys)",
+       "description":"CurveType is the type of cryptographic curve associated with a PublicKey. * secp256k1: SEC compressed - `33 bytes` (https://secg.org/sec1-v2.pdf#subsubsection.2.3.3) * secp256r1: SEC compressed - `33 bytes` (https://secg.org/sec1-v2.pdf#subsubsection.2.3.3) * edwards25519: `y (255-bits) || x-sign-bit (1-bit)` - `32 bytes` (https://ed25519.cr.yp.to/ed25519-20110926.pdf) * tweedle: 1st pk : Fq.t (32 bytes) || 2nd pk : Fq.t (32 bytes) (https://github.com/CodaProtocol/coda/blob/develop/rfcs/0038-rosetta-construction-api.md#marshal-keys) * pallas: `x (255 bits) || y-parity-bit (1-bit) - 32 bytes` (https://github.com/zcash/pasta)",
        "type":"string",
        "enum": [
          "secp256k1",
          "secp256r1",
          "edwards25519",
-         "tweedle"
+         "tweedle",
+         "pallas"
         ]
       },
      "SigningPayload": {
@@ -1385,7 +1395,8 @@
            "$ref":"#/components/schemas/AccountIdentifier"
           },
          "hex_bytes": {
-           "type":"string"
+           "type":"string",
+           "description":"Hex-encoded string of the payload bytes."
           },
          "signature_type": {
            "$ref":"#/components/schemas/SignatureType"
@@ -1589,6 +1600,18 @@
          "forward",
          "backward"
         ]
+      },
+     "Case": {
+       "description":"Case specifies the expected case for strings and hashes.",
+       "type":"string",
+       "nullable": true,
+       "enum": [
+         "upper_case",
+         "lower_case",
+         "case_sensitive",
+          null
+        ],
+       "default":"case_sensitive"
       },
      "AccountBalanceRequest": {
        "description":"An AccountBalanceRequest is utilized to make a balance request on the /account/balance endpoint. If the block_identifier is populated, a historical balance query should be performed.",
@@ -1857,8 +1880,7 @@
        "required": [
          "current_block_identifier",
          "current_block_timestamp",
-         "genesis_block_identifier",
-         "peers"
+         "genesis_block_identifier"
         ],
        "properties": {
          "current_block_identifier": {
@@ -1980,7 +2002,7 @@
         }
       },
      "ConstructionPreprocessRequest": {
-       "description":"ConstructionPreprocessRequest is passed to the `/construction/preprocess` endpoint so that a Rosetta implementation can determine which metadata it needs to request for construction. Metadata provided in this object should NEVER be a product of live data (i.e. the caller must follow some network-specific data fetching strategy outside of the Construction API to populate required Metadata). If live data is required for construction, it MUST be fetched in the call to `/construction/metadata`. The caller can provide a max fee they are willing to pay for a transaction. This is an array in the case fees must be paid in multiple currencies. The caller can also provide a suggested fee multiplier to indicate that the suggested fee should be scaled. This may be used to set higher fees for urgent transactions or to pay lower fees when there is less urgency. It is assumed that providing a very low multiplier (like 0.0001) will never lead to a transaction being created with a fee less than the minimum network fee (if applicable). In the case that the caller provides both a max fee and a suggested fee multiplier, the max fee will set an upper bound on the suggested fee (regardless of the multiplier provided).",
+       "description":"ConstructionPreprocessRequest is passed to the `/construction/preprocess` endpoint so that a Rosetta implementation can determine which metadata it needs to request for construction. Metadata provided in this object should NEVER be a product of live data (i.e. the caller must follow some network-specific data fetching strategy outside of the Construction API to populate required Metadata). If live data is required for construction, it MUST be fetched in the call to `/construction/metadata`.",
        "type":"object",
        "required": [
          "network_identifier",
@@ -1998,17 +2020,6 @@
           },
          "metadata": {
            "type":"object"
-          },
-         "max_fee": {
-           "type":"array",
-           "items": {
-             "$ref":"#/components/schemas/Amount"
-            }
-          },
-         "suggested_fee_multiplier": {
-           "type":"number",
-           "format":"double",
-           "minimum": 0
           }
         }
       },
