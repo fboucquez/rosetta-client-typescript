@@ -12,7 +12,7 @@ export interface BlockIdentifier {
      */
     index: number;
     /**
-     *
+     * This should be normalized according to the case specified in the block_hash_case network options.
      * @type {string}
      * @memberof BlockIdentifier
      */

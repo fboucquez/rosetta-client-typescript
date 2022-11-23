@@ -19,6 +19,7 @@ export * from './BlockTransactionRequest';
 export * from './BlockTransactionResponse';
 export * from './CallRequest';
 export * from './CallResponse';
+export * from './Case';
 export * from './Coin';
 export * from './CoinAction';
 export * from './CoinChange';
