@@ -18,10 +18,10 @@ import {
     BlockApi,
     CallApi,
     Configuration,
+    ConfigurationParameters,
     ConstructionApi,
     EventsApi,
     MempoolApi,
-    Middleware,
     NetworkApi,
     SearchApi,
 } from '../openapi';
@@ -29,21 +29,11 @@ import {
 /**
  * Params used to create a client factory.
  */
-interface RestClientFactoryParams {
+interface RestClientFactoryParams extends Omit<ConfigurationParameters, 'basePath'> {
     /**
      * The rest url of the Rosetta service. E.g: http://localhost:8080/
      */
     url: string;
-
-    /**
-     * Optional fetch api.
-     */
-    fetchApi?: unknown;
-
-    /**
-     * Middleware for pre/post request customizations.
-     */
-    middleware?: Middleware[];
 }
 
 /**
@@ -64,9 +54,9 @@ export class RosettaRestClientFactory {
         const fetchApi = configs.fetchApi || (typeof window !== 'undefined' && window.fetch.bind(window)) || fetch;
 
         this.configuration = new Configuration({
+            ...configs,
             basePath: configs.url,
             fetchApi: fetchApi,
-            middleware: configs.middleware || [],
         });
     }
 
